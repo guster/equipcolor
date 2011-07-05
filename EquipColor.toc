@@ -1,0 +1,11 @@
+## Interface: 40200
+
+## Title: EquipColor
+## Notes: Add a quality-based highlight to equipped items.
+## Author: Guster
+## Version: 1.0.0
+## X-Website: https://github.com/guster/equipcolor
+## X-Email: gustertheshaman@gmail.com
+## X-Category: Inventory
+
+EquipColor.lua
