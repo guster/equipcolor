@@ -90,7 +90,7 @@ f:SetScript("OnEvent", function (frame, event, ...)
       end)
     end
   elseif event == "GET_ITEM_INFO_RECEIVED" then
-    if InspectFrame:IsShown() then
+    if InspectFrame and InspectFrame:IsShown() then
       InspectPaperDollFrame_OnShow()
     end
   end
