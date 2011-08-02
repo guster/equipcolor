@@ -39,13 +39,17 @@ local function CreateButtonText(button)
 end
 
 local function GetItemQualityAndLevel(unit, slotID)
-  local itemID = GetInventoryItemID(unit, slotID)
+  if not f:IsEventRegistered("GET_ITEM_INFO_RECEIVED") then
+    f:RegisterEvent("GET_ITEM_INFO_RECEIVED") 	
+  end
   
+  local itemID = GetInventoryItemID(unit, slotID)
+
   if itemID ~= nil then
     local _, _, quality, level = GetItemInfo(itemID)
   
     return quality, level
-  end
+  else
 end
 
 local function UpdateItemSlotButton(button, unit)
@@ -92,4 +96,3 @@ f:SetScript("OnEvent", function (frame, event, ...)
   end
 end)
 f:RegisterEvent("ADDON_LOADED")
-f:RegisterEvent("GET_ITEM_INFO_RECEIVED")
