@@ -49,7 +49,7 @@ local function GetItemQualityAndLevel(unit, slotID)
     local _, _, quality, level = GetItemInfo(itemID)
   
     return quality, level
-  else
+  end
 end
 
 local function UpdateItemSlotButton(button, unit)
