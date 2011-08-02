@@ -6,30 +6,45 @@ If the unit is "target", the logic is more complicated:
 
  1. Wait for the Blizzard_InspectUI addon to load.
  2. Hook the slot button update method on the inspect paper doll frame.
- 3. Register for the GET_ITEM_INFO_RECEIVED event if not already registered.
- 4. Display colors for items we already know about.
-5a. Wait for any GET_ITEM_INFO_RECEIVED events to fire.
-5b. If a GET_ITEM_INFO_RECEIVED event is fired, return to step 4 by directly
+ 3. Display colors for items we already know about.
+4a. Wait for any GET_ITEM_INFO_RECEIVED events to fire.
+4b. If a GET_ITEM_INFO_RECEIVED event is fired, return to step 3 by directly
     calling the inspect paper doll frame's OnShow event handler.
 --]]
 
 local f = CreateFrame("Frame", nil, UIParent)
 
-local function GetItemQuality(unit, slotID)
-  if unit == "player" then
-    return GetInventoryItemQuality(unit, slotID)
-  elseif unit == "target" then
-    if not f:IsEventRegistered("GET_ITEM_INFO_RECEIVED") then
-      f:RegisterEvent("GET_ITEM_INFO_RECEIVED")
-    end
+local function CreateButtonBorder(button)
+  if button.border then return end
+
+  local border = button:CreateTexture(nil, "OVERLAY")
+  border:SetWidth(67)
+  border:SetHeight(67)
+  border:SetPoint("CENTER", button)
+  border:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
+  border:SetBlendMode("ADD")
+  border:Hide()
+  
+  button.border = border
+end
+
+local function CreateButtonText(button)
+  if button.text then return end
     
-    local itemID = GetInventoryItemID(unit, slotID)
-    
-    if itemID ~= nil then
-      local _, _, quality = GetItemInfo(itemID)
-    
-      return quality
-    end
+  local text = button:CreateFontString(nil, "ARTWORK", "NumberFontNormalSmall")
+  text:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 0, 1)
+  text:Hide()
+  
+  button.text = text
+end
+
+local function GetItemQualityAndLevel(unit, slotID)
+  local itemID = GetInventoryItemID(unit, slotID)
+  
+  if itemID ~= nil then
+    local _, _, quality, level = GetItemInfo(itemID)
+  
+    return quality, level
   end
 end
 
@@ -37,19 +52,22 @@ local function UpdateItemSlotButton(button, unit)
   local slotID = button:GetID()
   
   if (slotID >= INVSLOT_FIRST_EQUIPPED and slotID <= INVSLOT_LAST_EQUIPPED) then
-    local quality = GetItemQuality(unit, slotID)
-    local texture = button:GetNormalTexture()
+    local itemQuality, itemLevel = GetItemQualityAndLevel(unit, slotID)
     
-    if quality and quality >= ITEM_QUALITY_UNCOMMON then
-      local r, g, b = GetItemQualityColor(quality)
+    CreateButtonBorder(button)
+    CreateButtonText(button)
+    
+    if itemQuality and itemQuality >= ITEM_QUALITY_UNCOMMON then
+      local r, g, b = GetItemQualityColor(itemQuality)
       
-      texture:SetSize(button:GetWidth(), button:GetHeight())
-      texture:SetTexture("Interface\\Buttons\\UI-Quickslot-Depress")
-      texture:SetVertexColor(r, g, b)
-    
-      texture:Show()
+      button.border:SetVertexColor(r, g, b, 0.85)
+      button.border:Show()
+      
+      button.text:SetText(itemLevel)
+      button.text:Show()
     else
-      texture:Hide()
+      button.border:Hide()
+      button.text:Hide()
     end
   end
 end
@@ -74,3 +92,4 @@ f:SetScript("OnEvent", function (frame, event, ...)
   end
 end)
 f:RegisterEvent("ADDON_LOADED")
+f:RegisterEvent("GET_ITEM_INFO_RECEIVED")
